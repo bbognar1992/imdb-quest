@@ -1,6 +1,6 @@
 import re
-
-import scrapy
+from scrapy.spiders import Rule, CrawlSpider
+from scrapy.linkextractors import LinkExtractor
 
 from .ImdbMovie import ImdbMovie
 
@@ -34,39 +34,15 @@ def value_converter(x: str) -> str:
     return str(0)
 
 
-class ImdbSpider(scrapy.Spider):
+class ImdbSpider(CrawlSpider):
     name = 'imdbspider'
     allowed_domains = ['imdb.com']
     start_urls = ['http://www.imdb.com/chart/top']
 
-    custom_settings = {
-        'DOWNLOADER_MIDDLEWARES': {
-            "scrapy.downloadermiddlewares.useragent.UserAgentMiddleware": None,
-            "scrapy.downloadermiddlewares.retry.RetryMiddleware": None,
-            "scrapy_fake_useragent.middleware.RandomUserAgentMiddleware": 400,
-            "scrapy_fake_useragent.middleware.RetryUserAgentMiddleware": 401,
-        },
-        'FAKEUSERAGENT_PROVIDERS': [
-            "scrapy_fake_useragent.providers.FakerProvider",
-            "scrapy_fake_useragent.providers.FakeUserAgentProvider",
-            "scrapy_fake_useragent.providers.FixedUserAgentProvider",
-        ],
-
-        'DOWNLOAD_DELAY': 2,
-        'FEED_FORMAT': 'csv',
-        'FEED_URI': 'IMDB.csv'
-    }
-
-    def parse(self, response):
-        """ This function parses a imdb movies response. Some contracts are mingled
-        with this docstring.
-
-        @url https://www.imdb.com/title/tt0268978/?pf_rd_m=A2FGELUUNOQJNL&pf_rd_p=1a264172-ae11-42e4-8ef7-7fed1973bb8f&pf_rd_r=3RNA5HNP3QXPZ21890XF&pf_rd_s=center-1&pf_rd_t=15506&pf_rd_i=top&ref_=chttp_tt_142
-        @returns 'A Beautiful Mind' 8.2 933000 4
-        @scrapes title rating n_ratings n_oscars
-        """
-        for href in response.css("td.titleColumn a::attr(href)").getall():
-            yield response.follow(url=href, callback=self.parse_movie)
+    rules = (
+        Rule(LinkExtractor(restrict_css="#main > div > span > div > div > div.lister > table > tbody > "
+                                        "tr > td.titleColumn > a"), follow=True, callback="parse_movie"),
+    )
 
     def parse_movie(self, response):
         item = ImdbMovie()
