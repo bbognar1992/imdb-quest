@@ -1,4 +1,5 @@
 import re
+
 from scrapy.spiders import Spider
 
 from .ImdbMovie import ImdbMovie
@@ -39,7 +40,7 @@ class ImdbSpider(Spider):
     start_urls = ['http://www.imdb.com/chart/top']
     limit = 0
 
-    def parse(self, response):
+    def parse(self, response, **kwargs):
         if ImdbSpider.limit == 0:
             for href in response.css("td.titleColumn a::attr(href)").getall():
                 yield response.follow(url=href, callback=self.parse_movie)
@@ -48,7 +49,8 @@ class ImdbSpider(Spider):
                 for href in response.css(f"tr:nth-child({i}) > td.titleColumn a::attr(href)").getall():
                     yield response.follow(url=href, callback=self.parse_movie)
 
-    def parse_movie(self, response):
+    @staticmethod
+    def parse_movie(response):
         item = ImdbMovie()
         item['title'] = response.xpath("//*[@id=\"__next\"]/main/div/section[1]/section/div[3]/section/section/div["
                                        "2]/div[1]/h1/text()").get()

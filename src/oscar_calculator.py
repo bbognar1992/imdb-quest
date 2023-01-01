@@ -22,5 +22,3 @@ def oscar_calculator(df: pd.DataFrame):
         lambda x: oscar_reward_mapper(x['n_oscars']),
         axis=1
     )
-
-
