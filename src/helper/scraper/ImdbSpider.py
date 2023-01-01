@@ -1,6 +1,5 @@
 import re
-from scrapy.spiders import Rule, CrawlSpider
-from scrapy.linkextractors import LinkExtractor
+from scrapy.spiders import Spider
 
 from .ImdbMovie import ImdbMovie
 
@@ -34,15 +33,20 @@ def value_converter(x: str) -> str:
     return str(0)
 
 
-class ImdbSpider(CrawlSpider):
+class ImdbSpider(Spider):
     name = 'imdbspider'
     allowed_domains = ['imdb.com']
     start_urls = ['http://www.imdb.com/chart/top']
+    limit = 0
 
-    rules = (
-        Rule(LinkExtractor(restrict_css="#main > div > span > div > div > div.lister > table > tbody > "
-                                        "tr > td.titleColumn > a"), follow=True, callback="parse_movie"),
-    )
+    def parse(self, response):
+        if ImdbSpider.limit == 0:
+            for href in response.css("td.titleColumn a::attr(href)").getall():
+                yield response.follow(url=href, callback=self.parse_movie)
+        else:
+            for i in range(1, ImdbSpider.limit + 1):
+                for href in response.css(f"tr:nth-child({i}) > td.titleColumn a::attr(href)").getall():
+                    yield response.follow(url=href, callback=self.parse_movie)
 
     def parse_movie(self, response):
         item = ImdbMovie()

@@ -8,7 +8,7 @@ class TestScraper(unittest.TestCase):
         import os
         dir_path = os.path.dirname(os.path.realpath(__file__))
         file_path = os.path.join(dir_path, 'IMDB.csv')
-        scraper(file_path, True)
+        scraper(file_path, limit=10)
         assert os.path.exists(file_path)
         import pandas as pd
         df = pd.read_csv(file_path).dropna()

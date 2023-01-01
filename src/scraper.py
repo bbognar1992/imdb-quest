@@ -3,7 +3,7 @@ from scrapy.crawler import CrawlerProcess
 from src.helper.scraper.ImdbSpider import ImdbSpider
 
 
-def scraper(output_path: str, test_mode: bool = False):
+def scraper(output_path: str, limit: int = 0):
     settings = {
         'DOWNLOADER_MIDDLEWARES': {
             "scrapy.downloadermiddlewares.useragent.UserAgentMiddleware": None,
@@ -21,10 +21,9 @@ def scraper(output_path: str, test_mode: bool = False):
         'FEED_FORMAT': 'csv',
         'FEED_URI': output_path
     }
-    if test_mode:
-        settings['CLOSESPIDER_PAGECOUNT'] = 2
 
     process = CrawlerProcess(settings)
+    ImdbSpider.limit = limit
     process.crawl(ImdbSpider)
     process.start()
     process.join()
