@@ -31,7 +31,10 @@ if __name__ == "__main__":
     review_penalizer(df)
     oscar_calculator(df)
 
-    df['new_rating'] = df['rating'] - df['rating_deduction'] + df['rating_reward']
+    df['new_rating'] = df.apply(
+        lambda x: round(x['rating'] - x['rating_deduction'] + x['rating_reward'], 1),
+        axis=1
+    )
     df.sort_values(by='new_rating', ascending=False, inplace=True)
     corrected_file_path = os.path.join(dir_path, 'ratings.csv')
     remove_file_if_exists(corrected_file_path)
