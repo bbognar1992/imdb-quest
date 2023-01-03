@@ -48,6 +48,11 @@ def scraper(output_path: str, limit: int = 0) -> None:
         }
     }
 
+    if limit == 0:
+        modul_Logger.info("No limit set for scraping")
+    else:
+        modul_Logger.info(f"The limit for scraping is {limit}.")
+
     modul_Logger.info("Started.")
     process = CrawlerProcess(settings)
     ImdbSpider.limit = limit
