@@ -2,7 +2,6 @@ import logging
 import pathlib
 
 from scrapy.crawler import CrawlerProcess
-from twisted.internet import reactor
 
 from src.helper.scraper.ImdbSpider import ImdbSpider
 
@@ -57,7 +56,4 @@ def scraper(output_path: str, limit: int = 0) -> None:
     process = CrawlerProcess(settings)
     ImdbSpider.limit = limit
     process.crawl(ImdbSpider)
-    d = process.join()
-    d.addBoth(lambda _: reactor.stop())
-    reactor.run()  # the script will block here until all crawling jobs are finished
-    modul_Logger.info("Finished.")
+    process.start() # the script will block here until the crawling is finished

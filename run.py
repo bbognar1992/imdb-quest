@@ -30,8 +30,7 @@ if __name__ == "__main__":
     original_file_path = os.path.join(dir_path, 'scraped_data.csv')
     remove_file_if_exists(original_file_path)
 
-    while not os.path.exists(original_file_path) or os.stat(original_file_path).st_size == 0:
-        scraper(original_file_path, limit=args.limit)
+    scraper(original_file_path, limit=args.limit)
 
     df = pd.read_csv(original_file_path)
     review_penalizer(df)
