@@ -1,6 +1,5 @@
 import logging
 
-from scrapy.http import HtmlResponse
 from scrapy.spiders import Spider
 
 from .ImdbMovie import ImdbMovie
@@ -17,34 +16,34 @@ class ImdbSpider(Spider):
     limit = 0
 
     def parse(self, response, **kwargs):
-        hrefs = response.css("td.titleColumn a::attr(href)").getall()
-        until = len(hrefs)
-        if ImdbSpider.limit < len(hrefs):
-            until = ImdbSpider.limit
-        for href in hrefs[0:until]:
-            yield response.follow(url=href, callback=self.parse_movie)
+        movies = response.xpath('//*[@id="main"]/div/span/div/div/div[3]/table//tr')
+        until = len(movies)
+        if ImdbSpider.limit < len(movies):
+            until = ImdbSpider.limit +1
+
+        for movie in movies[1:until]:
+            item = ImdbMovie()
+            item['title'] = movie.css("td.titleColumn a::text").get()
+            item['rating'] = movie.css("td.ratingColumn.imdbRating > strong::text").get()
+            item['n_ratings'] = movie.css("td.ratingColumn.imdbRating > strong::attr(title)").get()
+
+            href = movie.css("td.titleColumn a::attr(href)").get()
+            yield response.follow(
+                url=href,
+                callback=self.pars_n_oscars,
+                cb_kwargs=dict(item=item)
+            )
 
     @staticmethod
-    def parse_movie(response):
+    def pars_n_oscars(response, item):
         """
         Saving values from the html page to an ImdbMovie object.
 
+        :param item:
         :param response: Object contains the website html page.
         :return: ImdbMovie object.
         """
-        item = ImdbMovie()
-        item['title'] = response.xpath("//*[@id=\"__next\"]/main/div/section[1]/section/div[3]/section/section/div["
-                                       "2]/div[1]/h1/text()").get()
-        item['rating'] = response.xpath("//*[@id=\"__next\"]/main/div/section[1]/section/div[3]/section/section/div["
-                                        "3]/div[2]/div[1]/div[2]/div/div[1]/a/div/div/div[2]/div[1]/span[1]/text("
-                                        ")").get()
-        item['n_ratings'] = response.xpath("//*[@id=\"__next\"]/main/div/section[1]/section/div["
-                                           "3]/section/section/div[3]/div[2]/div[1]/div[2]/div/div["
-                                           "1]/a/div/div/div[ "
-                                           "2]/div[3]/text()").get()
+        modul_Logger.info(f"Scraped: {item['title']}")
         item['n_oscars'] = response.xpath("//*[@id=\"__next\"]/main/div/section[1]/div/section/div/div[1]/section["
                                           "1]/div/ul/li/a[1]/text()").get(default="0")
-
-        modul_Logger.info(f"Scraped: {item['title']}")
-
-        return item
+        yield item

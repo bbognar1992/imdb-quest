@@ -1,6 +1,9 @@
+import logging
 import re
 
 from scrapy import Item, Field
+
+modul_Logger = logging.getLogger('imdb_quest.scraper')
 
 
 def serialize_n_oscars(value: str) -> str:
@@ -25,19 +28,10 @@ def serializer_n_ratings(value: str) -> str:
     :return: The string converted to integer.
     """
     try:
-        if 'K' in value:
-            if len(value) > 1:
-                return str(int(float(value.replace('K', '')) * 1000))
-            return str(1000)
-        if 'M' in value:
-            if len(value) > 1:
-                return str(int(float(value.replace('M', '')) * 1000000))
-            return str(1000000)
-        if 'B' in value:
-            return str(int(float(value.replace('B', '')) * 1000000000))
-        return str(0)
+        return value.replace(" user ratings", '').split(" based on ")[1].replace(',', '')
     except Exception:
-        return str(0)
+        modul_Logger.error(f"Cannot determine the number of oscars from: '{value}'!")
+        return ""
 
 
 class ImdbMovie(Item):
