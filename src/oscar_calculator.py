@@ -1,8 +1,14 @@
+import logging
+
 import pandas as pd
+
+modul_Logger = logging.getLogger('imdb_quest.oscar_calculator')
 
 
 def oscar_calculator(df: pd.DataFrame):
     """
+    Determine the reward value for each movie rating.
+
     :param df: Object containing the scraped data from IMDB 250 list
     """
 
@@ -18,7 +24,9 @@ def oscar_calculator(df: pd.DataFrame):
         else:
             return 0
 
+    modul_Logger.info("Started.")
     df['rating_reward'] = df.apply(
         lambda x: oscar_reward_mapper(x['n_oscars']),
         axis=1
     )
+    modul_Logger.info("Finished.")

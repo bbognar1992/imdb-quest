@@ -1,40 +1,16 @@
-import re
+import logging
 
 from scrapy.spiders import Spider
 
 from .ImdbMovie import ImdbMovie
+from .functions import value_converter, get_number_of_oscars, get_search_safely
 
-
-def get_search_safely(response, xpath: str, default_return: str) -> str:
-    try:
-        return response.xpath(xpath).get()
-    except Exception:
-        return default_return
-
-
-def get_number_of_oscars(raw_str: str) -> str:
-    try:
-        found = re.search(r"Won [\d]+ Oscar", raw_str)
-        return found.group(0).replace("Won ", "").replace(" Oscar", "")
-    except Exception:
-        return "0"
-
-
-def value_converter(x: str) -> str:
-    if 'K' in x:
-        if len(x) > 1:
-            return str(int(float(x.replace('K', '')) * 1000))
-        return str(1000)
-    if 'M' in x:
-        if len(x) > 1:
-            return str(int(float(x.replace('M', '')) * 1000000))
-        return str(1000000)
-    if 'B' in x:
-        return str(int(float(x.replace('B', '')) * 1000000000))
-    return str(0)
+modul_Logger = logging.getLogger('imdb_quest.scraper.helper.imdbspider')
 
 
 class ImdbSpider(Spider):
+    """Class for determine what and how to scrape in the IMDB website."""
+
     name = 'imdbspider'
     allowed_domains = ['imdb.com']
     start_urls = ['http://www.imdb.com/chart/top']
@@ -46,11 +22,21 @@ class ImdbSpider(Spider):
                 yield response.follow(url=href, callback=self.parse_movie)
         else:
             for i in range(1, ImdbSpider.limit + 1):
-                for href in response.css(f"tr:nth-child({i}) > td.titleColumn a::attr(href)").getall():
+                try:
+                    href = response.css(f"tr:nth-child({i}) > td.titleColumn a::attr(href)").get()
                     yield response.follow(url=href, callback=self.parse_movie)
+                except Exception as err:
+                    modul_Logger.debug(err)
+                    break
 
     @staticmethod
     def parse_movie(response):
+        """
+        Saving values from the html page to an ImdbMovie object.
+
+        :param response: Object contains the website html page.
+        :return: ImdbMovie object.
+        """
         item = ImdbMovie()
         item['title'] = response.xpath("//*[@id=\"__next\"]/main/div/section[1]/section/div[3]/section/section/div["
                                        "2]/div[1]/h1/text()").get()
@@ -64,4 +50,7 @@ class ImdbSpider(Spider):
         item['n_oscars'] = get_number_of_oscars(get_search_safely(response, "//*[@id=\"__next\"]/main/div/section["
                                                                             "1]/div/section/div/div[1]/section["
                                                                             "1]/div/ul/li/a[1]/text()", "0"))
+
+        modul_Logger.info(f"Scraped: {item['title']}")
+
         return item

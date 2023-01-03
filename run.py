@@ -1,3 +1,4 @@
+import logging
 import os
 import argparse
 
@@ -22,6 +23,9 @@ if __name__ == "__main__":
                         help='Limit the number of movies to parse.')
 
     args = parser.parse_args()
+
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
     dir_path = os.path.dirname(os.path.realpath(__file__))
     original_file_path = os.path.join(dir_path, 'scraped_data.csv')
     remove_file_if_exists(original_file_path)
