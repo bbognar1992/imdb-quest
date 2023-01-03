@@ -25,12 +25,17 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    modul_Logger = logging.getLogger('imdb_quest')
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
     original_file_path = os.path.join(dir_path, 'scraped_data.csv')
     remove_file_if_exists(original_file_path)
 
     scraper(original_file_path, limit=args.limit)
+
+    if not os.path.exists(original_file_path) or os.stat(original_file_path).st_size < 4:
+        modul_Logger.warning("Scraper not produced the desired output. Please run it again.")
+        exit(1)
 
     df = pd.read_csv(original_file_path)
     review_penalizer(df)
