@@ -24,7 +24,7 @@ class ImdbSpider(Spider):
         for movie in movies[1:until]:
             item = ImdbMovie()
             item['title'] = movie.css("td.titleColumn a::text").get()
-            item['rating'] = movie.css("td.ratingColumn.imdbRating > strong::text").get()
+            item['imdb_rating'] = movie.css("td.ratingColumn.imdbRating > strong::text").get()
             item['n_ratings'] = movie.css("td.ratingColumn.imdbRating > strong::attr(title)").get()
 
             href = movie.css("td.titleColumn a::attr(href)").get()

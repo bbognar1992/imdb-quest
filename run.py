@@ -37,7 +37,7 @@ if __name__ == "__main__":
     oscar_calculator(df)
 
     df['new_rating'] = df.apply(
-        lambda x: round(x['rating'] - x['rating_deduction'] + x['rating_reward'], 1),
+        lambda x: round(x['imdb_rating'] - x['rating_deduction'] + x['rating_reward'], 1),
         axis=1
     )
     df.sort_values(by='new_rating', ascending=False, inplace=True)

@@ -42,7 +42,7 @@ def scraper(output_path: str, limit: int = 0) -> None:
         'FEEDS': {
             pathlib.Path(output_path): {
                 'format': 'csv',
-                'fields': ['title', 'rating', 'n_ratings', 'n_oscars']
+                'fields': ['title', 'imdb_rating', 'n_ratings', 'n_oscars']
             },
         }
     }
@@ -56,4 +56,4 @@ def scraper(output_path: str, limit: int = 0) -> None:
     process = CrawlerProcess(settings)
     ImdbSpider.limit = limit
     process.crawl(ImdbSpider)
-    process.start() # the script will block here until the crawling is finished
+    process.start()  # the script will block here until the crawling is finished

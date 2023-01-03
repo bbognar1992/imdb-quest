@@ -38,6 +38,6 @@ class ImdbMovie(Item):
     """Class for defining the data model."""
 
     title = Field()
-    rating = Field()
+    imdb_rating = Field()
     n_ratings = Field(serializer=serializer_n_ratings)
     n_oscars = Field(serializer=serialize_n_oscars)
